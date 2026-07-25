@@ -6,129 +6,202 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { getMemberDashboard } from "../../api/dashboardApi";
+import { useNavigate } from "react-router-dom";
+
+
 function MemberDashboard() {
 
-  const assignedLeads = [
-    {
-      company: "Google Pvt Ltd",
-      status: "New",
-    },
-    {
-      company: "Amazon India",
-      status: "Qualified",
-    },
-    {
-      company: "Adobe",
-      status: "Contacted",
-    },
-  ];
 
-  const tasks = [
-    "Call Google Pvt Ltd at 2:00 PM",
-    "Follow up with Amazon India",
-    "Send proposal to Adobe",
-  ];
+  const [dashboard, setDashboard] = useState(null);
 
-  const activities = [
-    "Updated Google lead to Qualified",
-    "Added note to Amazon lead",
-    "Marked Microsoft lead as Won",
-  ];
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
+
+
+  const fetchDashboard = async () => {
+
+    try {
+
+      setLoading(true);
+
+
+      const response = await getMemberDashboard();
+
+
+      setDashboard(response.data);
+
+
+    } catch (error) {
+
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to fetch dashboard."
+      );
+
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+
+  useEffect(() => {
+
+    fetchDashboard();
+
+  }, []);
+
+
+
+  if (loading) {
+
+    return (
+
+      <div className="bg-white rounded-2xl p-10 text-center text-gray-500">
+
+        Loading dashboard...
+
+      </div>
+
+    );
+
+  }
+
+
+
+  if (!dashboard) {
+
+    return (
+
+      <div className="bg-white rounded-2xl p-10 text-center text-gray-500">
+
+        No dashboard data found.
+
+      </div>
+
+    );
+
+  }
+
+
 
   return (
+
     <div className="space-y-8">
+
+
 
       {/* Welcome */}
 
+
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white">
 
+
         <h1 className="text-3xl font-bold">
-          Good Morning, Rahul 👋
+
+          Good Morning, {dashboard.member?.name || "Member"} 👋
+
         </h1>
 
+
         <p className="mt-2 text-blue-100">
+
           Here's a summary of your assigned leads today.
+
         </p>
 
+
       </div>
+
+
+
+
+
 
       {/* Stats */}
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
 
-          <FiUsers className="text-3xl text-blue-600 mb-4" />
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-          <p className="text-gray-500">
-            Assigned Leads
-          </p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            18
-          </h2>
+        <StatCard
+          icon={<FiUsers />}
+          title="Assigned Leads"
+          value={dashboard.stats?.assignedLeads || 0}
+          color="text-blue-600"
+        />
 
-        </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <StatCard
+          icon={<FiTrendingUp />}
+          title="In Progress"
+          value={dashboard.stats?.inProgress || 0}
+          color="text-orange-500"
+        />
 
-          <FiTrendingUp className="text-3xl text-orange-500 mb-4" />
 
-          <p className="text-gray-500">
-            In Progress
-          </p>
+        <StatCard
+          icon={<FiTarget />}
+          title="Won Leads"
+          value={dashboard.stats?.wonLeads || 0}
+          color="text-green-600"
+        />
 
-          <h2 className="text-3xl font-bold mt-2">
-            8
-          </h2>
 
-        </div>
+        {/* <StatCard
+          icon={<FiCalendar />}
+          title="Today's Follow-ups"
+          value={dashboard.stats?.todayFollowups || 0}
+          color="text-purple-600"
+        /> */}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-
-          <FiTarget className="text-3xl text-green-600 mb-4" />
-
-          <p className="text-gray-500">
-            Won Leads
-          </p>
-
-          <h2 className="text-3xl font-bold mt-2">
-            5
-          </h2>
-
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-
-          <FiCalendar className="text-3xl text-purple-600 mb-4" />
-
-          <p className="text-gray-500">
-            Today's Follow-ups
-          </p>
-
-          <h2 className="text-3xl font-bold mt-2">
-            4
-          </h2>
-
-        </div>
 
       </div>
 
+
+
+
+
+
+
+
       {/* Two Columns */}
+
 
       <div className="grid lg:grid-cols-2 gap-6">
 
-        {/* Assigned Leads */}
+
+
+        {/* Recent Leads */}
+
+
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
 
+
           <div className="flex justify-between items-center border-b border-gray-200 p-5">
 
+
             <h2 className="text-xl font-semibold">
+
               Recent Assigned Leads
+
             </h2>
 
-            <button className="text-blue-600 flex items-center gap-1 text-sm hover:underline cursor-pointer">
+
+
+            <button className="text-blue-600 flex items-center gap-1 text-sm hover:underline"
+            onClick={() => navigate("/member/leads")}
+            >
 
               View All
 
@@ -136,99 +209,146 @@ function MemberDashboard() {
 
             </button>
 
+
           </div>
+
+
+
 
           <div className="p-5 space-y-4">
 
-            {assignedLeads.map((lead, index) => (
 
-              <div
-                key={index}
-                className="flex justify-between items-center border rounded-xl p-4 hover:bg-gray-50"
-              >
+            {
+              dashboard.recentLeads?.length > 0 ?
 
-                <div>
+              dashboard.recentLeads.map((lead)=>(
 
-                  <h3 className="font-semibold">
-                    {lead.company}
-                  </h3>
 
-                  <p className="text-sm text-gray-500">
+                <div
+                  key={lead._id}
+                  className="flex justify-between items-center border rounded-xl p-4 hover:bg-gray-50"
+                >
+
+
+                  <div>
+
+
+                    <h3 className="font-semibold">
+
+                      {lead.company || lead.name}
+
+                    </h3>
+
+
+                    <p className="text-sm text-gray-500">
+
+                      {lead.status}
+
+                    </p>
+
+
+                  </div>
+
+
+
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm
+                    ${
+                      lead.status === "Won"
+                      ? "bg-green-100 text-green-700"
+                      :
+                      lead.status === "Lost"
+                      ? "bg-red-100 text-red-700"
+                      :
+                      "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+
                     {lead.status}
-                  </p>
+
+                  </span>
+
+
 
                 </div>
 
-              </div>
 
-            ))}
+              ))
 
-          </div>
+              :
 
-        </div>
+              <p className="text-gray-500">
 
-        {/* Today's Tasks */}
+                No recent leads.
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+              </p>
 
-          <div className="border-b border-gray-200 p-5">
+            }
 
-            <h2 className="text-xl font-semibold">
-              Today's Tasks
-            </h2>
 
           </div>
 
-          <div className="p-5 space-y-4">
-
-            {tasks.map((task, index) => (
-
-              <div
-                key={index}
-                className="rounded-xl bg-blue-50 border border-blue-100 p-4"
-              >
-                {task}
-              </div>
-
-            ))}
-
-          </div>
 
         </div>
 
       </div>
 
-      {/* Activity */}
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
 
-        <div className="border-b border-gray-200 p-5">
 
-          <h2 className="text-xl font-semibold">
-            Recent Activity
-          </h2>
 
-        </div>
 
-        <div className="p-5 space-y-5">
 
-          {activities.map((activity, index) => (
-
-            <div
-              key={index}
-              className="border-l-4 border-blue-600 pl-5"
-            >
-              {activity}
-            </div>
-
-          ))}
-
-        </div>
-
-      </div>
 
     </div>
+
   );
+
 }
+
+
+
+
+function StatCard({
+  icon,
+  title,
+  value,
+  color
+}) {
+
+
+  return (
+
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+
+
+      <div className={`text-3xl mb-4 ${color}`}>
+
+        {icon}
+
+      </div>
+
+
+      <p className="text-gray-500">
+
+        {title}
+
+      </p>
+
+
+      <h2 className="text-3xl font-bold mt-2">
+
+        {value}
+
+      </h2>
+
+
+    </div>
+
+  );
+
+}
+
+
 
 export default MemberDashboard;

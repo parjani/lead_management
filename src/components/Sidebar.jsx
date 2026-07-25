@@ -9,12 +9,17 @@ import {
   FiLogOut,
   FiMenu,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../api/authApi";
+import { getToken, clearAuth, getUser } from "../utils/token";
+import { toast } from "react-toastify";
 
 function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-
+  const navigate = useNavigate();
+  const user = getUser();
   // Change this later from API
-  const isAdmin = true;
+  const isAdmin = (user?.role === "admin") ? true : false;
 
   const adminMenus = [
     {
@@ -69,11 +74,34 @@ function Sidebar() {
 
   const menus = isAdmin ? adminMenus : memberMenus;
 
+  const handleLogout = async () => {
+
+    try {
+
+      const token = getToken();
+
+      await logout(token);
+
+      clearAuth();
+
+      toast.success("Logged out successfully.");
+
+      navigate("/login");
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message || "Logout failed."
+      );
+
+    }
+
+  };
+
   return (
     <aside
-      className={`${
-        collapsed ? "w-20" : "w-64"
-      } h-screen bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
+      className={`${collapsed ? "w-20" : "w-64"
+        } h-screen bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
     >
       {/* Logo */}
 
@@ -104,10 +132,9 @@ function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
 
-              ${
-                isActive
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+              ${isActive
+                ? "bg-blue-600 text-white shadow-md"
+                : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
               }`
             }
           >
@@ -130,7 +157,8 @@ function Sidebar() {
       <div className="p-3 border-t border-gray-200">
 
         <button
-          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition cursor-pointer"
         >
           <FiLogOut size={20} />
 

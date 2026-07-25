@@ -1,47 +1,92 @@
+import { useEffect, useState } from "react";
 import {
   FiActivity,
-  FiSearch,
-  FiFilter,
-  FiClock,
   FiCheckCircle,
   FiMessageSquare,
-  FiTrendingUp,
+  FiRefreshCw,
+  FiSearch,
+  FiUser,
 } from "react-icons/fi";
+import { toast } from "react-toastify";
 
-function MemberActivity() {
+import {
+  getMemberActivities,
+  getMemberActivityStats,
+} from "../../api/activity";
 
-  const activities = [
-    {
-      id: 1,
-      action: "Updated lead status to Qualified",
-      lead: "Google Pvt Ltd",
-      time: "Today • 10:20 AM",
-      type: "Status Update",
-    },
-    {
-      id: 2,
-      action: "Added a follow-up note",
-      lead: "Amazon India",
-      time: "Yesterday • 4:15 PM",
-      type: "Note",
-    },
-    {
-      id: 3,
-      action: "Marked lead as Won",
-      lead: "Microsoft",
-      time: "2 Days Ago",
-      type: "Lead Won",
-    },
-    {
-      id: 4,
-      action: "Updated lead status to Contacted",
-      lead: "Adobe",
-      time: "4 Days Ago",
-      type: "Status Update",
-    },
-  ];
+function Activity() {
+
+  const [activities, setActivities] = useState([]);
+  const [stats, setStats] = useState({
+    totalActivities: 0,
+    statusChanges: 0,
+    assignments: 0,
+    notesAdded: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState("All");
+
+  const fetchActivities = async () => {
+
+    try {
+
+      setLoading(true);
+
+      const [activityResponse, statsResponse] = await Promise.all([
+        getMemberActivities(),
+        getMemberActivityStats(),
+      ]);
+
+      setActivities(activityResponse.data);
+
+      setStats(statsResponse.data);
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to fetch activities."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  useEffect(() => {
+
+    fetchActivities();
+
+  }, []);
+
+  const filteredActivities = activities.filter((activity) => {
+
+    const matchesSearch =
+      activity.action
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      activity.lead?.name
+        ?.toLowerCase()
+        .includes(search.toLowerCase()) ||
+      activity.lead?.company
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
+
+    const matchesType =
+      type === "All" ||
+      activity.type === type;
+
+    return matchesSearch && matchesType;
+
+  });
 
   return (
+
     <div className="space-y-8">
 
       {/* Header */}
@@ -53,85 +98,124 @@ function MemberActivity() {
         </h1>
 
         <p className="text-gray-500 mt-2">
-          View your recent updates, notes, and lead activities.
+          Track all activities performed by you.
         </p>
 
       </div>
 
-      {/* Summary Cards */}
+      {/* Stats */}
 
       <div className="grid md:grid-cols-3 gap-6">
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
 
-          <FiActivity className="text-3xl text-blue-600 mb-4" />
+          <FiActivity className="text-3xl text-blue-600 mb-3" />
 
           <p className="text-gray-500">
             Total Activities
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            48
+            {stats.totalActivities}
           </h2>
 
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
 
-          <FiCheckCircle className="text-3xl text-green-600 mb-4" />
+          <FiRefreshCw className="text-3xl text-orange-500 mb-3" />
 
           <p className="text-gray-500">
-            Status Updates
+            Status Changes
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            21
+            {stats.statusChanges}
           </h2>
 
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        {/* <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
 
-          <FiMessageSquare className="text-3xl text-purple-600 mb-4" />
+          <FiCheckCircle className="text-3xl text-green-600 mb-3" />
 
           <p className="text-gray-500">
-            Notes Added
+            Assignments
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            27
+            {stats.assignments}
+          </h2>
+
+        </div> */}
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+
+          <FiMessageSquare className="text-3xl text-purple-600 mb-3" />
+
+          <p className="text-gray-500">
+            Notes
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            {stats.notesAdded}
           </h2>
 
         </div>
 
       </div>
 
-      {/* Search & Filter */}
+      {/* Search */}
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-wrap gap-4">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
 
-        <div className="flex items-center flex-1 border border-gray-300 rounded-xl px-4">
+        <div className="flex flex-col lg:flex-row gap-4">
 
-          <FiSearch className="text-gray-500" />
+          <div className="relative flex-1">
 
-          <input
-            type="text"
-            placeholder="Search activity..."
-            className="w-full p-3 outline-none"
-          />
+            <FiSearch
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+            />
 
-        </div>
+            <input
+              type="text"
+              placeholder="Search activity..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              className="w-full rounded-xl border border-gray-300 py-3 pl-12 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            />
 
-        <div className="flex items-center gap-2 border border-gray-300 rounded-xl px-4">
+          </div>
 
-          <FiFilter />
+          <select
+            value={type}
+            onChange={(e) =>
+              setType(e.target.value)
+            }
+            className="rounded-xl border border-gray-300 px-4 py-3 outline-none"
+          >
 
-          <select className="outline-none py-3 bg-transparent">
+            <option value="All">
+              All Types
+            </option>
 
-            <option>All Activities</option>
-            <option>Status Update</option>
-            <option>Note</option>
-            <option>Lead Won</option>
+            <option value="Lead">
+              Lead
+            </option>
+
+            <option value="Status">
+              Status
+            </option>
+
+            <option value="Assignment">
+              Assignment
+            </option>
+
+            <option value="Note">
+              Note
+            </option>
 
           </select>
 
@@ -139,78 +223,118 @@ function MemberActivity() {
 
       </div>
 
-      {/* Activity Timeline */}
+      {/* Timeline */}
 
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
 
-        <div className="border-b border-gray-200 px-6 py-5">
+        <div className="border-b border-gray-200 px-6 py-4">
 
           <h2 className="text-xl font-semibold">
-            Recent Activity
+            Recent Activities
           </h2>
 
         </div>
 
         <div className="p-6 space-y-6">
 
-          {activities.map((activity) => (
+          {
+            loading ? (
 
-            <div
-              key={activity.id}
-              className="flex gap-5"
-            >
+              <p className="text-center text-gray-500">
+                Loading activities...
+              </p>
 
-              <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+            ) : filteredActivities.length === 0 ? (
 
-                <FiTrendingUp />
+              <p className="text-center text-gray-500">
+                No activities found.
+              </p>
 
-              </div>
+            ) : (
 
-              <div className="flex-1 border-l-4 border-blue-600 pl-5 pb-5">
+              filteredActivities.map((activity) => (
 
-                <div className="flex justify-between items-center">
+                <div
+                  key={activity._id}
+                  className="flex gap-5"
+                >
 
-                  <h3 className="font-semibold text-gray-800">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
 
-                    {activity.action}
+                    <FiUser />
 
-                  </h3>
+                  </div>
 
-                  <span className="flex items-center gap-1 text-sm text-gray-500">
+                  <div className="flex-1 border-l-4 border-blue-600 pl-5 pb-6">
 
-                    <FiClock size={14} />
+                    <div className="flex justify-between">
 
-                    {activity.time}
+                      <h3 className="font-semibold text-gray-800">
 
-                  </span>
+                        {activity.user?.name}
+
+                      </h3>
+
+                      <span className="text-sm text-gray-500">
+
+                        {new Date(
+                          activity.createdAt
+                        ).toLocaleString()}
+
+                      </span>
+
+                    </div>
+
+                    <p className="mt-2 text-gray-700">
+
+                      {activity.action}
+
+                    </p>
+
+                    {
+                      activity.lead && (
+
+                        <span className="inline-block mt-3 rounded-full bg-gray-100 px-3 py-1 text-sm">
+
+                          {activity.lead.name}
+
+                          {
+                            activity.lead.company &&
+                            ` • ${activity.lead.company}`
+                          }
+
+                        </span>
+
+                      )
+                    }
+
+                    <div className="mt-3">
+
+                      <span className="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+
+                        {activity.type}
+
+                      </span>
+
+                    </div>
+
+                  </div>
 
                 </div>
 
-                <p className="text-gray-600 mt-2">
-                  Lead:
-                  <span className="font-medium ml-2">
-                    {activity.lead}
-                  </span>
-                </p>
+              ))
 
-                <span className="inline-block mt-3 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
-
-                  {activity.type}
-
-                </span>
-
-              </div>
-
-            </div>
-
-          ))}
+            )
+          }
 
         </div>
 
       </div>
 
     </div>
+
   );
+
 }
 
-export default MemberActivity;
+export default Activity;

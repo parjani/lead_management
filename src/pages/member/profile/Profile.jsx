@@ -1,143 +1,101 @@
 import {
-  FiEdit2,
-  FiLock,
   FiMail,
   FiPhone,
-  FiBriefcase,
   FiUser,
   FiCalendar,
-  FiClock,
-  FiUsers,
-  FiTrendingUp,
-  FiActivity,
+  FiShield,
+  FiCheckCircle,
 } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { getProfile } from "../../../api/profileApi";
 
 function Profile() {
-  const profile = {
-    name: "Rahul Sharma",
-    email: "rahul@gmail.com",
-    phone: "+91 9876543210",
-    role: "Sales Member",
-    department: "Sales",
-    username: "rahul_member",
-    joined: "15 Jan 2026",
-    lastLogin: "Today, 10:20 AM",
-    status: "Active",
 
-    assignedLeads: 18,
-    wonDeals: 6,
-    totalActivities: 92,
+  const [profile, setProfile] = useState(null);
+
+  const fetchProfile = async () => {
+
+    try {
+
+      const response = await getProfile();
+
+      setProfile(response.user);
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to load profile."
+      );
+
+    }
+
   };
 
-  const recentActivities = [
-    {
-      title: "Updated Google lead to Qualified",
-      time: "2 hours ago",
-    },
-    {
-      title: "Added follow-up note",
-      time: "Yesterday",
-    },
-    {
-      title: "Marked Microsoft lead as Won",
-      time: "3 days ago",
-    },
-  ];
+  useEffect(() => {
 
-  return (
-    <div className="space-y-8">
+    fetchProfile();
 
-      {/* Profile Header */}
+  }, []);
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+  if (!profile) {
 
-        <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-6">
+    return (
 
-          <div className="flex items-center gap-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-10 text-center text-gray-500">
 
-            <div className="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-4xl font-bold shadow-lg">
-              {profile.name.charAt(0)}
-            </div>
-
-            <div>
-
-              <h1 className="text-3xl font-bold">
-                {profile.name}
-              </h1>
-
-              <p className="text-gray-500 mt-2">
-                {profile.role}
-              </p>
-
-              <span className="inline-block mt-4 bg-green-100 text-green-700 px-4 py-1 rounded-full font-medium">
-                {profile.status}
-              </span>
-
-            </div>
-
-          </div>
-
-          <div className="flex gap-3">
-
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl flex items-center gap-2 cursor-pointer">
-              <FiEdit2 />
-              Edit Profile
-            </button>
-
-            <button className="border border-gray-300 hover:bg-gray-100 px-5 py-3 rounded-xl flex items-center gap-2 cursor-pointer">
-              <FiLock />
-              Change Password
-            </button>
-
-          </div>
-
-        </div>
+        Loading profile...
 
       </div>
 
-      {/* Statistics */}
+    );
 
-      <div className="grid md:grid-cols-3 gap-6">
+  }
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+  return (
 
-          <FiUsers className="text-3xl text-blue-600 mb-4" />
+    <div className="space-y-8">
 
-          <p className="text-gray-500">
-            Assigned Leads
-          </p>
+      {/* Header */}
 
-          <h2 className="text-3xl font-bold mt-2">
-            {profile.assignedLeads}
-          </h2>
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8">
 
-        </div>
+        <div className="flex flex-col lg:flex-row items-center lg:items-center gap-6">
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="w-28 h-28 rounded-full bg-blue-600 text-white flex items-center justify-center text-5xl font-bold shadow-lg">
 
-          <FiTrendingUp className="text-3xl text-green-600 mb-4" />
+            {profile.name.charAt(0).toUpperCase()}
 
-          <p className="text-gray-500">
-            Won Deals
-          </p>
+          </div>
 
-          <h2 className="text-3xl font-bold mt-2">
-            {profile.wonDeals}
-          </h2>
+          <div className="flex-1">
 
-        </div>
+            <h1 className="text-3xl font-bold text-gray-800">
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              {profile.name}
 
-          <FiActivity className="text-3xl text-purple-600 mb-4" />
+            </h1>
 
-          <p className="text-gray-500">
-            Activities
-          </p>
+            <p className="text-gray-500 mt-2 capitalize">
 
-          <h2 className="text-3xl font-bold mt-2">
-            {profile.totalActivities}
-          </h2>
+              {profile.role}
+
+            </p>
+
+            <span
+              className={`inline-block mt-4 px-4 py-2 rounded-full text-sm font-semibold ${
+                profile.status === "active"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+
+              {profile.status}
+
+            </span>
+
+          </div>
 
         </div>
 
@@ -147,85 +105,172 @@ function Profile() {
 
       <div className="grid lg:grid-cols-2 gap-6">
 
-        {/* Personal Information */}
+        {/* Personal */}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
 
           <div className="border-b border-gray-200 px-6 py-4">
+
             <h2 className="text-xl font-semibold">
+
               Personal Information
+
             </h2>
+
           </div>
 
           <div className="p-6 space-y-6">
 
             <div className="flex items-center gap-4">
-              <FiUser className="text-blue-600" />
+
+              <FiUser className="text-blue-600 text-xl" />
+
               <div>
-                <p className="text-sm text-gray-500">Full Name</p>
-                <p>{profile.name}</p>
+
+                <p className="text-sm text-gray-500">
+
+                  Full Name
+
+                </p>
+
+                <p className="font-medium">
+
+                  {profile.name}
+
+                </p>
+
               </div>
+
             </div>
 
             <div className="flex items-center gap-4">
-              <FiMail className="text-green-600" />
+
+              <FiMail className="text-green-600 text-xl" />
+
               <div>
-                <p className="text-sm text-gray-500">Email</p>
-                <p>{profile.email}</p>
+
+                <p className="text-sm text-gray-500">
+
+                  Email
+
+                </p>
+
+                <p className="font-medium">
+
+                  {profile.email}
+
+                </p>
+
               </div>
+
             </div>
 
             <div className="flex items-center gap-4">
-              <FiPhone className="text-orange-500" />
-              <div>
-                <p className="text-sm text-gray-500">Phone</p>
-                <p>{profile.phone}</p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-4">
-              <FiBriefcase className="text-purple-600" />
+              <FiPhone className="text-orange-500 text-xl" />
+
               <div>
-                <p className="text-sm text-gray-500">Department</p>
-                <p>{profile.department}</p>
+
+                <p className="text-sm text-gray-500">
+
+                  Phone
+
+                </p>
+
+                <p className="font-medium">
+
+                  {profile.phone}
+
+                </p>
+
               </div>
+
             </div>
 
           </div>
 
         </div>
 
-        {/* Account Information */}
+        {/* Account */}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
 
           <div className="border-b border-gray-200 px-6 py-4">
+
             <h2 className="text-xl font-semibold">
+
               Account Information
+
             </h2>
+
           </div>
 
           <div className="p-6 space-y-6">
 
-            <div>
-              <p className="text-sm text-gray-500">Username</p>
-              <p>{profile.username}</p>
+            <div className="flex items-center gap-4">
+
+              <FiShield className="text-purple-600 text-xl" />
+
+              <div>
+
+                <p className="text-sm text-gray-500">
+
+                  Role
+
+                </p>
+
+                <p className="font-medium capitalize">
+
+                  {profile.role}
+
+                </p>
+
+              </div>
+
             </div>
 
             <div className="flex items-center gap-4">
-              <FiCalendar className="text-blue-600" />
+
+              <FiCalendar className="text-blue-600 text-xl" />
+
               <div>
-                <p className="text-sm text-gray-500">Joined On</p>
-                <p>{profile.joined}</p>
+
+                <p className="text-sm text-gray-500">
+
+                  Joined On
+
+                </p>
+
+                <p className="font-medium">
+
+                  {new Date(profile.createdAt).toLocaleDateString()}
+
+                </p>
+
               </div>
+
             </div>
 
             <div className="flex items-center gap-4">
-              <FiClock className="text-green-600" />
+
+              <FiCheckCircle className="text-green-600 text-xl" />
+
               <div>
-                <p className="text-sm text-gray-500">Last Login</p>
-                <p>{profile.lastLogin}</p>
+
+                <p className="text-sm text-gray-500">
+
+                  Account Status
+
+                </p>
+
+                <p className="font-medium capitalize">
+
+                  {profile.status}
+
+                </p>
+
               </div>
+
             </div>
 
           </div>
@@ -234,45 +279,30 @@ function Profile() {
 
       </div>
 
-      {/* Recent Activity */}
+      {/* Info Card */}
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
 
-        <div className="border-b border-gray-200 px-6 py-4">
+        <h2 className="text-lg font-semibold text-blue-700 mb-2">
 
-          <h2 className="text-xl font-semibold">
-            Recent Activity
-          </h2>
+          Profile Information
 
-        </div>
+        </h2>
 
-        <div className="p-6 space-y-5">
+        <p className="text-gray-700">
 
-          {recentActivities.map((activity, index) => (
+          This profile is managed by the administrator. If you need to update
+          your personal information or account details, please contact your
+          administrator.
 
-            <div
-              key={index}
-              className="border-l-4 border-blue-600 pl-5"
-            >
-
-              <h3 className="font-medium">
-                {activity.title}
-              </h3>
-
-              <p className="text-sm text-gray-500 mt-1">
-                {activity.time}
-              </p>
-
-            </div>
-
-          ))}
-
-        </div>
+        </p>
 
       </div>
 
     </div>
+
   );
+
 }
 
 export default Profile;

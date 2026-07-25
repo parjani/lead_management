@@ -1,340 +1,461 @@
 import {
-  FiArrowLeft,
-  FiEdit2,
-  FiTrash2,
-  FiMail,
-  FiPhone,
-  FiBriefcase,
-  FiCalendar,
-  FiUsers,
-  FiCheckCircle,
-  FiTrendingUp,
+    FiArrowLeft,
+    FiEdit2,
+    FiMail,
+    FiPhone,
+    FiUser,
+    FiCalendar,
+    FiClock,
+    FiShield,
 } from "react-icons/fi";
-import { Link } from "react-router-dom";
+
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+
+import { getMemberById } from "../../../api/memberApi";
+
 
 function ViewMember() {
-  const member = {
-    id: "EMP-1023",
-    name: "Rahul Sharma",
-    email: "rahul@gmail.com",
-    phone: "+91 9876543210",
-    role: "Admin",
-    department: "Sales",
-    status: "Active",
-    joined: "15 Jan 2026",
 
-    assignedLeads: 28,
-    qualified: 16,
-    won: 9,
+    const { id } = useParams();
 
-    recentLeads: [
-      "Google Pvt Ltd",
-      "Amazon India",
-      "Microsoft",
-      "Adobe",
-    ],
+    const navigate = useNavigate();
 
-    activities: [
-      {
-        title: "Assigned lead 'Google Pvt Ltd'",
-        date: "Today • 10:30 AM",
-      },
-      {
-        title: "Updated lead status to Qualified",
-        date: "Yesterday • 04:15 PM",
-      },
-      {
-        title: "Created new lead",
-        date: "18 Jul 2026",
-      },
-    ],
-  };
 
-  return (
-    <div className="space-y-8">
+    const [member, setMember] = useState(null);
+    const [leads, setLeads] = useState([]);
+    const [leadCount, setLeadCount] = useState(0);
 
-      {/* Back */}
+    const [loading, setLoading] = useState(true);
 
-      <Link
-        to="/admin/members"
-        className="inline-flex items-center gap-2 text-blue-600 font-medium hover:underline"
-      >
-        <FiArrowLeft />
-        Back to Members
-      </Link>
 
-      {/* Header */}
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+    const fetchMember = async () => {
 
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        try {
 
-          <div className="flex items-center gap-6">
+            setLoading(true);
 
-            <div className="w-24 h-24 rounded-full bg-blue-600 text-white text-4xl font-bold flex items-center justify-center shadow-lg">
-              {member.name.charAt(0)}
-            </div>
 
-            <div>
+            const response = await getMemberById(id);
 
-              <h1 className="text-3xl font-bold text-gray-800">
-                {member.name}
-              </h1>
 
-              <p className="text-gray-500 mt-1">
-                {member.department}
-              </p>
+            setMember(response.data.member);
+            setLeads(response.data.leads);
+            setLeadCount(response.data.leadCount);
 
-              <div className="flex gap-3 mt-4">
 
-                <span className="px-4 py-1 rounded-full bg-purple-100 text-purple-700 font-medium">
-                  {member.role}
-                </span>
+        } catch (error) {
 
-                <span className="px-4 py-1 rounded-full bg-green-100 text-green-700 font-medium">
-                  {member.status}
-                </span>
 
-              </div>
+            toast.error(
+                error.response?.data?.message ||
+                "Failed to fetch member."
+            );
+
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
+
+
+    useEffect(() => {
+
+        fetchMember();
+
+    }, []);
+
+
+
+
+    if (loading) {
+
+        return (
+
+            <div className="bg-white rounded-2xl p-10 text-center text-gray-500">
+
+                Loading member...
 
             </div>
 
-          </div>
+        );
 
-          <div className="flex gap-3">
+    }
 
-            <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl flex items-center gap-2 cursor-pointer">
 
-              <FiEdit2 />
 
-              Edit
 
-            </button>
+    if (!member) {
 
-            <button className="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl flex items-center gap-2 cursor-pointer">
+        return (
 
-              <FiTrash2 />
+            <div className="bg-white rounded-2xl p-10 text-center text-gray-500">
 
-              Delete
-
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Stats */}
-
-      <div className="grid md:grid-cols-3 gap-6">
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-
-          <FiUsers className="text-blue-600 text-3xl mb-4" />
-
-          <h3 className="text-gray-500">
-            Assigned Leads
-          </h3>
-
-          <p className="text-3xl font-bold mt-2">
-            {member.assignedLeads}
-          </p>
-
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-
-          <FiTrendingUp className="text-orange-500 text-3xl mb-4" />
-
-          <h3 className="text-gray-500">
-            Qualified Leads
-          </h3>
-
-          <p className="text-3xl font-bold mt-2">
-            {member.qualified}
-          </p>
-
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-
-          <FiCheckCircle className="text-green-600 text-3xl mb-4" />
-
-          <h3 className="text-gray-500">
-            Won Deals
-          </h3>
-
-          <p className="text-3xl font-bold mt-2">
-            {member.won}
-          </p>
-
-        </div>
-
-      </div>
-
-      {/* Information */}
-
-      <div className="grid lg:grid-cols-2 gap-6">
-
-        {/* Personal Information */}
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-
-          <div className="border-b border-gray-200 px-6 py-4">
-
-            <h2 className="text-xl font-semibold">
-              Personal Information
-            </h2>
-
-          </div>
-
-          <div className="p-6 space-y-6">
-
-            <div className="flex items-center gap-4">
-
-              <FiMail className="text-blue-600 text-xl" />
-
-              <div>
-
-                <p className="text-sm text-gray-500">
-                  Email
-                </p>
-
-                <p>{member.email}</p>
-
-              </div>
+                Member not found.
 
             </div>
 
-            <div className="flex items-center gap-4">
+        );
 
-              <FiPhone className="text-green-600 text-xl" />
+    }
 
-              <div>
 
-                <p className="text-sm text-gray-500">
-                  Phone
-                </p>
 
-                <p>{member.phone}</p>
+    return (
 
-              </div>
+        <div className="space-y-8">
 
-            </div>
 
-            <div className="flex items-center gap-4">
+            {/* Header */}
 
-              <FiBriefcase className="text-purple-600 text-xl" />
+            <div className="flex justify-between items-center">
 
-              <div>
 
-                <p className="text-sm text-gray-500">
-                  Department
-                </p>
+                <div>
 
-                <p>{member.department}</p>
 
-              </div>
+                    <Link
+                        to="/admin/members"
+                        className="inline-flex items-center gap-2 text-blue-600 font-medium hover:underline"
+                    >
 
-            </div>
+                        <FiArrowLeft />
 
-            <div className="flex items-center gap-4">
+                        Back to Members
 
-              <FiCalendar className="text-orange-500 text-xl" />
+                    </Link>
 
-              <div>
 
-                <p className="text-sm text-gray-500">
-                  Joined On
-                </p>
 
-                <p>{member.joined}</p>
+                    <h1 className="mt-4 text-4xl font-bold text-gray-800">
 
-              </div>
+                        {member.name}
 
-            </div>
+                    </h1>
 
-          </div>
 
-        </div>
 
-        {/* Assigned Leads */}
+                    <div className="flex gap-3 mt-4">
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
 
-          <div className="border-b border-gray-200 px-6 py-4">
+                        <span className="bg-blue-100 text-blue-700 px-4 py-1 rounded-full">
 
-            <h2 className="text-xl font-semibold">
-              Recently Assigned Leads
-            </h2>
+                            {member.role}
 
-          </div>
+                        </span>
 
-          <div className="p-6 space-y-4">
 
-            {member.recentLeads.map((lead, index) => (
 
-              <div
-                key={index}
-                className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
-              >
+                        <span
+                            className={`px-4 py-1 rounded-full ${member.status === "active"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                                }`}
+                        >
 
-                <span>{lead}</span>
+                            {member.status}
 
-                <span className="text-sm text-blue-600 font-medium">
-                  Open
-                </span>
+                        </span>
 
-              </div>
 
-            ))}
+                    </div>
 
-          </div>
 
-        </div>
+                </div>
 
-      </div>
 
-      {/* Activity */}
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
 
-        <div className="border-b border-gray-200 px-6 py-4">
+                <button
 
-          <h2 className="text-xl font-semibold">
-            Recent Activity
-          </h2>
+                    onClick={() => navigate(`/admin/members/edit/${member._id}`)}
 
-        </div>
+                    className="px-5 py-3 rounded-xl bg-green-600 text-white flex items-center gap-2 hover:bg-green-700"
 
-        <div className="p-6 space-y-6">
+                >
 
-          {member.activities.map((activity, index) => (
+                    <FiEdit2 />
 
-            <div
-              key={index}
-              className="border-l-4 border-blue-600 pl-5"
-            >
+                    Edit Member
 
-              <p className="font-medium">
-                {activity.title}
-              </p>
+                </button>
 
-              <p className="text-sm text-gray-500 mt-1">
-                {activity.date}
-              </p>
 
             </div>
 
-          ))}
+
+
+
+
+
+            {/* Information Cards */}
+
+
+            <div className="grid lg:grid-cols-2 gap-6">
+
+
+
+                {/* Personal Information */}
+
+
+                <div className="bg-white rounded-2xl shadow-sm border p-6">
+
+
+                    <h2 className="text-xl font-semibold mb-6">
+
+                        Personal Information
+
+                    </h2>
+
+
+
+                    <div className="space-y-5">
+
+
+
+                        <div className="flex gap-4 items-center">
+
+                            <FiUser className="text-blue-600" />
+
+                            <div>
+
+                                <p className="text-sm text-gray-500">
+                                    Name
+                                </p>
+
+                                <p>
+                                    {member.name}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+
+
+
+                        <div className="flex gap-4 items-center">
+
+                            <FiMail className="text-purple-600" />
+
+                            <div>
+
+                                <p className="text-sm text-gray-500">
+                                    Email
+                                </p>
+
+                                <p>
+                                    {member.email}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+
+
+
+                        <div className="flex gap-4 items-center">
+
+                            <FiPhone className="text-green-600" />
+
+                            <div>
+
+                                <p className="text-sm text-gray-500">
+                                    Phone
+                                </p>
+
+                                <p>
+                                    {member.phone}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+                {/* Account Details */}
+
+
+                <div className="bg-white rounded-2xl shadow-sm border p-6">
+
+
+                    <h2 className="text-xl font-semibold mb-6">
+
+                        Account Details
+
+                    </h2>
+
+
+
+                    <div className="space-y-5">
+
+
+                        <div className="flex gap-4 items-center">
+
+                            <FiShield className="text-orange-500" />
+
+                            <div>
+
+                                <p className="text-sm text-gray-500">
+                                    Role
+                                </p>
+
+                                <p className="capitalize">
+                                    {member.role}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+
+
+
+                        <div className="flex gap-4 items-center">
+
+                            <FiCalendar className="text-blue-500" />
+
+                            <div>
+
+                                <p className="text-sm text-gray-500">
+                                    Created On
+                                </p>
+
+                                <p>
+                                    {new Date(member.createdAt).toLocaleDateString()}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+
+
+
+                        <div className="flex gap-4 items-center">
+
+                            <FiClock className="text-indigo-500" />
+
+                            <div>
+
+                                <p className="text-sm text-gray-500">
+                                    Last Updated
+                                </p>
+
+                                <p>
+                                    {new Date(member.updatedAt).toLocaleDateString()}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+
+                    </div>
+
+
+                </div>
+
+
+
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border p-6">
+
+                <h2 className="text-xl font-semibold mb-6">
+                    Assigned Leads ({leadCount})
+                </h2>
+
+                {leads.length > 0 ? (
+
+                    <div className="space-y-4">
+
+                        {leads.map((lead) => (
+
+                            <div className="p-4 border border-gray-300 rounded-xl bg-sky-50">
+
+                                <h3 className="font-semibold">
+                                    {lead.name}
+                                </h3>
+
+                                <p className="text-sm text-gray-500">
+                                    {lead.email}
+                                </p>
+
+                                <p className="text-sm text-gray-500">
+                                    {lead.phone}
+                                </p>
+
+                                {/* Notes */}
+                                <div className="mt-4 space-y-4">
+                                    <h4 className="font-semibold text-gray-800">Notes</h4>
+
+                                    {lead.notes.length > 0 ? (
+                                        lead.notes.map((note) => (
+                                            <div
+                                                key={note._id}
+                                                className="border-l-4 border-blue-500 pl-4 py-2 bg-gray-50 rounded-r-xl"
+                                            >
+                                                <p className="text-gray-800">{note.text}</p>
+
+                                                <p className="text-xs text-gray-500 mt-2">
+                                                    {new Date(note.createdAt).toLocaleString()}
+                                                </p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500 italic">No notes available.</p>
+                                    )}
+                                </div>
+
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                ) : (
+
+                    <p className="text-gray-500">
+                        No leads assigned.
+                    </p>
+
+                )}
+
+            </div>
+
+
+
+
+
 
         </div>
 
-      </div>
+    );
 
-    </div>
-  );
 }
+
 
 export default ViewMember;

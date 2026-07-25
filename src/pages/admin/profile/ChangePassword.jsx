@@ -1,7 +1,100 @@
 import { Link } from "react-router-dom";
-import { FiArrowLeft, FiLock, FiSave, FiShield } from "react-icons/fi";
+import { FiArrowLeft, FiLock, FiSave, FiShield, FiEye, FiEyeOff } from "react-icons/fi";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { changePassword } from "../../../api/profileApi";
 
 function ChangePassword() {
+
+  const [form, setForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+
+  };
+
+
+
+  const togglePassword = (field) => {
+
+    setShowPassword({
+      ...showPassword,
+      [field]: !showPassword[field]
+    });
+
+  };
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("ewew");
+    
+
+    if (form.newPassword !== form.confirmPassword) {
+
+      return toast.error(
+        "New password and confirm password do not match."
+      );
+
+    }
+
+
+    try {
+
+      setLoading(true);
+
+
+      const response = await changePassword({
+
+        currentPassword: form.currentPassword,
+
+        newPassword: form.newPassword
+
+      });
+
+
+      toast.success(response.message);
+
+
+      setForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+
+
+    } catch (error) {
+
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to change password."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
   return (
     <div className="max-w-4xl mx-auto space-y-6">
 
@@ -45,7 +138,10 @@ function ChangePassword() {
 
         </div>
 
-        <div className="p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 space-y-6"
+        >
 
           {/* Current Password */}
 
@@ -55,11 +151,35 @@ function ChangePassword() {
               Current Password
             </label>
 
-            <input
-              type="password"
-              placeholder="Enter current password"
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            />
+            <div className="relative">
+
+              <input
+                type={showPassword.current ? "text" : "password"}
+                name="currentPassword"
+                value={form.currentPassword}
+                onChange={handleChange}
+                placeholder="Enter current password"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 pr-12 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+
+
+              <button
+                type="button"
+                onClick={() => togglePassword("current")}
+                className="absolute right-4 top-3.5 text-gray-500"
+              >
+
+                {
+                  showPassword.current
+                    ?
+                    <FiEyeOff />
+                    :
+                    <FiEye />
+                }
+
+              </button>
+
+            </div>
 
           </div>
 
@@ -71,11 +191,35 @@ function ChangePassword() {
               New Password
             </label>
 
-            <input
-              type="password"
-              placeholder="Enter new password"
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            />
+            <div className="relative">
+
+              <input
+                type={showPassword.new ? "text" : "password"}
+                name="newPassword"
+                value={form.newPassword}
+                onChange={handleChange}
+                placeholder="Enter new password"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 pr-12 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+
+
+              <button
+                type="button"
+                onClick={() => togglePassword("new")}
+                className="absolute right-4 top-3.5 text-gray-500"
+              >
+
+                {
+                  showPassword.new
+                    ?
+                    <FiEyeOff />
+                    :
+                    <FiEye />
+                }
+
+              </button>
+
+            </div>
 
           </div>
 
@@ -87,15 +231,39 @@ function ChangePassword() {
               Confirm New Password
             </label>
 
-            <input
-              type="password"
-              placeholder="Confirm new password"
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            />
+            <div className="relative">
+
+              <input
+                type={showPassword.confirm ? "text" : "password"}
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm new password"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 pr-12 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+
+
+              <button
+                type="button"
+                onClick={() => togglePassword("confirm")}
+                className="absolute right-4 top-3.5 text-gray-500"
+              >
+
+                {
+                  showPassword.confirm
+                    ?
+                    <FiEyeOff />
+                    :
+                    <FiEye />
+                }
+
+              </button>
+
+            </div>
 
           </div>
 
-        </div>
+        </form>
 
       </div>
 
@@ -163,18 +331,25 @@ function ChangePassword() {
         </Link>
 
         <button
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition cursor-pointer"
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition cursor-pointer"
         >
 
           <FiSave />
 
-          Update Password
+          {
+            loading
+              ?
+              "Updating..."
+              :
+              "Update Password"
+          }
 
         </button>
 
       </div>
 
-    </div>
+    </div >
   );
 }
 

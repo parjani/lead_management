@@ -6,9 +6,50 @@ import {
   FiUser,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import DeleteMember from "./DeleteMember";
+import { deleteMember } from "../../../api/memberApi";
+import { toast } from "react-toastify";
+import { useState } from "react";
 
-function MemberTable({ members }) {
+function MemberTable({ members, onDeleteSuccess }) {
   const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDelete = async () => {
+
+    try {
+
+      setDeleteLoading(true);
+
+
+      const response = await deleteMember(selectedMember._id);
+
+
+      toast.success(response.message);
+
+
+      onDeleteSuccess();
+
+
+    } catch (error) {
+      console.log(error);
+      toast.error(
+        error.response?.data?.message ||
+        "Failed to delete member."
+      );
+
+
+    } finally {
+
+      setDeleteLoading(false);
+
+      setShowDeleteModal(false);
+
+    }
+
+  };
 
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-lg border border-gray-200">
@@ -134,7 +175,7 @@ function MemberTable({ members }) {
 
                 <span className="rounded-full bg-gray-100 px-3 py-1 font-semibold">
 
-                  {member.assignedLeads}
+                  {member.leadCount}
 
                 </span>
 
@@ -144,7 +185,7 @@ function MemberTable({ members }) {
 
               <td className="px-6 py-5">
 
-                {member.status === "Active" ? (
+                {member.status === "active" ? (
 
                   <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
 
@@ -172,7 +213,7 @@ function MemberTable({ members }) {
 
                   <button
                     onClick={() =>
-                      navigate(`/admin/members/${member.id}`)
+                      navigate(`/admin/members/${member._id}`)
                     }
                     className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition cursor-pointer"
                   >
@@ -181,7 +222,7 @@ function MemberTable({ members }) {
 
                   <button
                     onClick={() =>
-                      navigate(`/admin/members/edit/${member.id}`)
+                      navigate(`/admin/members/edit/${member._id}`)
                     }
                     className="w-9 h-9 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition cursor-pointer"
                   >
@@ -190,8 +231,20 @@ function MemberTable({ members }) {
 
                   <button
                     className="w-9 h-9 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition cursor-pointer"
+                    title="Delete"
+
+                    onClick={() => {
+
+                      setSelectedMember(member);
+
+                      setShowDeleteModal(true);
+
+                    }}
+
                   >
+
                     <FiTrash2 className="mx-auto" />
+
                   </button>
 
                 </div>
@@ -205,7 +258,19 @@ function MemberTable({ members }) {
         </tbody>
 
       </table>
+      <DeleteMember
 
+        isOpen={showDeleteModal}
+
+        onClose={() => setShowDeleteModal(false)}
+
+        onConfirm={handleDelete}
+
+        loading={deleteLoading}
+
+        memberName={selectedMember?.name}
+
+      />
     </div>
   );
 }

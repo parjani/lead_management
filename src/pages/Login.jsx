@@ -1,10 +1,71 @@
 import { HiOutlineMail, HiOutlineLockClosed } from "react-icons/hi";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../api/authApi";
+import { toast } from "react-toastify";
+import { setToken, setUser } from "../utils/token";
 
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
+
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
+
+    const [loading, setLoading] = useState(false);
+
+    const handleChange = (e) => {
+
+        const { name, value } = e.target;
+
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+    };
+
+    const handleLogin = async (e) => {
+
+        e.preventDefault();
+
+        try {
+
+            setLoading(true);
+
+            const response = await login(formData);
+
+            setToken(response.data.token);
+            setUser(response.data.user);
+
+            toast.success(response.message);
+
+            if (response.data.user.role === "admin") {
+
+                navigate("/admin/dashboard");
+
+            } else {
+
+                navigate("/member/dashboard");
+
+            }
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message || "Login failed."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 flex items-center justify-center px-5">
@@ -70,7 +131,10 @@ function Login() {
 
                         </div>
 
-                        <form className="space-y-6">
+                        <form
+                            className="space-y-6"
+                            onSubmit={handleLogin}
+                        >
 
                             {/* Email */}
 
@@ -86,6 +150,9 @@ function Login() {
 
                                     <input
                                         type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
                                         placeholder="Enter your email"
                                         className="w-full ml-3 outline-none"
                                     />
@@ -108,6 +175,9 @@ function Login() {
 
                                     <input
                                         type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
                                         placeholder="Enter your password"
                                         className="w-full ml-3 outline-none"
                                     />
@@ -124,21 +194,23 @@ function Login() {
 
                             </div>
 
-                            
+
 
                             <button
-                                className="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl"
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl disabled:bg-blue-400 disabled:cursor-not-allowed"
                             >
-                                Sign In
+                                {loading ? "Signing In..." : "Sign In"}
                             </button>
                             <div className="mt-5 text-center">
-  <Link
-    to="/"
-    className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium transition-colors"
-  >
-    ← Back to Home
-  </Link>
-</div>
+                                <Link
+                                    to="/"
+                                    className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium transition-colors"
+                                >
+                                    ← Back to Home
+                                </Link>
+                            </div>
 
                         </form>
 
