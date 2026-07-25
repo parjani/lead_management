@@ -37,6 +37,10 @@ export const loginUser = async (req, res) => {
     // Compare password
     const isPasswordMatch = await user.comparePassword(password);
 
+    console.log("Entered password:", password);
+    console.log("Stored hash:", user.password);
+    console.log("Password match:", isPasswordMatch);
+
     if (!isPasswordMatch) {
       return errorResponse(
         res,
