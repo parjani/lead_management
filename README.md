@@ -160,7 +160,7 @@ Example:
   "email": "john@example.com",
   "role": "member"
 }
-
+```
 # Authentication & Authorization
 
 The application uses JWT-based authentication for securing private routes and managing user sessions.
@@ -254,3 +254,27 @@ Member Dashboard
 ├── View Assigned Leads
 ├── Update Leads
 └── Add Notes
+
+## Deployed Application URL
+- Frontened = https://lead-management-ashy-sigma.vercel.app
+- Backened = https://lead-management-q76o.onrender.com
+
+## Login Credentials
+# Demo Credentials
+
+## Admin Account
+
+Email:
+admin@gmail.com
+
+Password:
+admin123
+
+
+## Member Account
+
+Email:
+member@gmail.com
+
+Password:
+123456
